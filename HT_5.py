@@ -1,10 +1,12 @@
 from colorama import Fore, Back, Style, init
 import simpy
 import random
+import math
 
 init(autoreset = True)
-
-def proceso(env,name,RAM,CPU,arrivingTime,amount,instructions,einstructions,velocity):
+total = []
+desviacion = []
+def proceso(env,name,RAM,CPU,arrivingTime,amount,instructions,einstructions,velocity,total):
     global totalTime
     #Condicionamiento de tiempo que tarda en ejecutar las instrucciones
     
@@ -52,6 +54,7 @@ def proceso(env,name,RAM,CPU,arrivingTime,amount,instructions,einstructions,velo
                     print('El %s se dirige a la cola, para esperar la atencion del CPU' % (name))
                     
     processTime = endTime - startTime
+    total.append(processTime)
     totalTime += processTime
      
        
@@ -59,7 +62,7 @@ def proceso(env,name,RAM,CPU,arrivingTime,amount,instructions,einstructions,velo
 totalTime = 0    
 env = simpy.Environment()
 RAM = simpy.Container(env,init = 100, capacity = 100)
-CPU = simpy.Resource(env, capacity = 2)
+CPU = simpy.Resource(env, capacity = 1)
 SEED = 10
 NO_PROCESS = 25
 CPUInstructions = 3
@@ -71,16 +74,32 @@ random.seed(SEED)
                 
 for i in range(NO_PROCESS):
     #timeDriving = random.randint(1,5)
-    arrivingTime = random.expovariate(1.0/1)
+    arrivingTime = random.expovariate(1.0/10)
     amount = random.randint(1,10)
     instructions = random.randint(1,10)
-    env.process(proceso(env, 'Proceso %d' % i, RAM, CPU,arrivingTime,amount,instructions,CPUInstructions,velocity))
+    env.process(proceso(env, 'Proceso %d' % i, RAM, CPU,arrivingTime,amount,instructions,CPUInstructions,velocity,total))
     
+ 
+
+       
     
+ 
 #Se ejecuta la simulacion
 env.run()
 print()
-print('\033[1;30m'+'PROMEDIO:' , (totalTime/NO_PROCESS))#Promedio de la simulacion
+print('\033[1;30m'+'PROMEDIO:' , (totalTime/NO_PROCESS ))#Promedio de la simulacion
+
+
+Suma = 0
+for tiempo in total:
+    desviacion.append((tiempo-(totalTime/NO_PROCESS ))**2)
+    
+for desvi in desviacion:
+    Suma = Suma + desvi
+estandar = abs(Suma/NO_PROCESS)
+desviacionEstandar = math.sqrt(estandar)
+
+print('\033[1;30m'+'DESVIACION ESTANDAR:', desviacionEstandar)
 
             
             
